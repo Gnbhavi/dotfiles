@@ -1,0 +1,333 @@
+-- ✅ All vim settings, keymaps, autocmds go DOWN HERE
+vim.g.vimtex_quickfix_mode = 1
+vim.g.vimtex_quickfix_open_on_warning = 0
+vim.g.vimtex_quickfix_autoclose_after_keystrokes = 3
+
+vim.api.nvim_create_autocmd("QuickFixCmdPost", {
+  pattern = "*",
+  callback = function()
+    local qflist = vim.fn.getqflist()
+    for _, item in ipairs(qflist) do
+      if item.type == "E" then
+        vim.cmd("cc")
+        return
+      end
+    end
+  end,
+})
+
+-- latexindent formatter
+local yaml_path = vim.fn.stdpath("config") .. "/latex/mySetting.yaml"
+local is_formatting = false
+
+local function run_latexindent()
+  if is_formatting then
+    return
+  end
+  is_formatting = true
+
+  local filepath = vim.fn.expand("%:p")
+  local root = vim.fn.getcwd()
+  local backup_dir = root .. "/outputs/logs"
+
+  local cmd = string.format(
+    'latexindent -l="%s" -w "%s"; mv "%s/"*.bak* "%s/" 2>/dev/null; mv indent.log "%s/" 2>/dev/null',
+    yaml_path,
+    filepath,
+    vim.fn.expand("%:p:h"),
+    backup_dir,
+    backup_dir
+  )
+
+  vim.fn.system(cmd)
+  vim.cmd("silent! checktime")
+  vim.schedule(function()
+    vim.api.nvim_echo({ { "Formatted: " .. vim.fn.expand("%:t"), "Normal" } }, false, {})
+  end)
+
+  is_formatting = false
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "tex",
+  callback = function()
+    -- disable LSP formatting so latexindent is the only formatter
+    vim.bo.formatexpr = ""
+    vim.keymap.set("n", "gq", "<nop>", { buffer = true })
+
+    -- vim.keymap.set("n", "<leader>k", function()
+    --   vim.diagnostic.open_float()
+    -- end, { buffer = true, desc = "Float diagnostic at cursor" })
+
+    -- manual format keymap
+    vim.keymap.set("n", "<leader>lf", run_latexindent, { buffer = true, desc = "Format with latexindent" })
+
+    -- Phase 6: auto create outputs/logs and .latexmkrc
+    local root = vim.fn.getcwd()
+
+    local logs_path = root .. "/outputs/logs"
+    if vim.fn.isdirectory(logs_path) == 0 then
+      vim.fn.mkdir(logs_path, "p")
+      vim.api.nvim_echo({ { "Created: " .. logs_path, "Normal" } }, false, {})
+    end
+
+    local latexmkrc = root .. "/.latexmkrc"
+    if vim.fn.filereadable(latexmkrc) == 0 then
+      local f = io.open(latexmkrc, "w")
+      if f then
+        f:write("$out_dir   = 'outputs';\n")
+        f:write("$aux_dir   = 'outputs/logs';\n")
+        f:write("$pdf_mode  = 1;\n")
+        f:write("$pdflatex  = 'pdflatex -interaction=nonstopmode -synctex=1 %O %S';\n")
+        f:close()
+        vim.api.nvim_echo({ { "Created: " .. latexmkrc, "Normal" } }, false, {})
+      end
+    end
+
+    -- only touch .gitignore if it already exists
+    local gitignore = root .. "/.gitignore"
+    if vim.fn.filereadable(gitignore) == 1 then
+      local f = io.open(gitignore, "a+")
+      if f then
+        local content = f:read("*a")
+        if not content:find("outputs/") then
+          f:write("\noutputs/\n")
+          vim.api.nvim_echo({ { "Added outputs/ to .gitignore", "Normal" } }, false, {})
+        end
+        f:close()
+      end
+    end
+  end,
+})
+
+-- auto format on save
+vim.api.nvim_create_autocmd("BufWritePost", {
+  pattern = "*.tex",
+  callback = run_latexindent,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function()
+    vim.keymap.set("n", "q", "<cmd>cclose<cr>", { buffer = true, silent = true })
+    vim.keymap.set("n", "<Esc>", "<cmd>cclose<cr>", { buffer = true, silent = true })
+  end,
+})
+
+vim.diagnostic.config({
+  underline = true,
+  virtual_text = false,
+  signs = true,
+  severity_sort = true,
+  float = {
+    border = "rounded",
+    source = "if_many",
+  },
+})
+
+local signs = {
+  Error = { text = "󰅚 ", hl = "DiagnosticSignError" },
+  Warn = { text = "󰀪 ", hl = "DiagnosticSignWarn" },
+  Info = { text = "󰋽 ", hl = "DiagnosticSignInfo" },
+  Hint = { text = "󰌶 ", hl = "DiagnosticSignHint" },
+}
+for type, v in pairs(signs) do
+  vim.fn.sign_define("DiagnosticSign" .. type, {
+    text = v.text,
+    texthl = v.hl,
+    numhl = "",
+  })
+end
+
+vim.keymap.set("n", "<leader>lh", function()
+  local diag = vim.diagnostic.get(0, { lnum = vim.fn.line(".") - 1 })
+  if #diag == 0 then
+    vim.api.nvim_echo({ { "No diagnostic at cursor", "Normal" } }, false, {})
+    return
+  end
+  local msg = diag[1].message
+  local hint = "No hint — check the full log with \\ll"
+  if msg:find("overfull") or msg:find("Overfull") then
+    hint = "Fix: add \\linebreak, use \\sloppy, or shorten the line"
+  elseif msg:find("undefined") then
+    hint = "Fix: check \\usepackage{}, \\newcommand{}, or spelling"
+  elseif msg:find("multiply defined") then
+    hint = "Fix: duplicate \\label{} — rename one of them"
+  elseif msg:find("Citation") or msg:find("citation") then
+    hint = "Fix: check .bib file and run BibTeX / biber"
+  elseif msg:find("runaway") or msg:find("Runaway") then
+    hint = "Fix: unclosed environment — search backwards for missing \\end{}"
+  elseif msg:find("Missing") then
+    hint = "Fix: likely a missing closing brace } or $ sign"
+  end
+  vim.api.nvim_echo({ { "Hint: " .. hint, "DiagnosticInfo" } }, false, {})
+end, { desc = "Suggest fix for LaTeX error at cursor" })
+
+vim.api.nvim_set_hl(0, "SpellBad", { undercurl = true, sp = "#55aaff" })
+return {
+  {
+    "lervag/vimtex",
+    lazy = false,
+    init = function()
+      -- vim.g.vimtex_view_method = "skim"
+      vim.g.vimtex_view_method = "zathura"
+      vim.g.vimtex_compiler_latexmk = {
+        out_dir = "outputs",
+        callback = 1,
+        continuous = 1,
+        executable = "latexmk",
+        options = {
+          "-pdf",
+          "-interaction=nonstopmode",
+          "-synctex=1",
+        },
+      }
+    end,
+  },
+}
+
+-- -- ✅ All vim settings, keymaps, autocmds go DOWN HERE
+-- vim.g.vimtex_quickfix_mode = 1
+-- vim.g.vimtex_quickfix_open_on_warning = 0
+-- vim.g.vimtex_quickfix_autoclose_after_keystrokes = 3
+--
+-- vim.api.nvim_create_autocmd("QuickFixCmdPost", {
+--   pattern = "*",
+--   callback = function()
+--     local qflist = vim.fn.getqflist()
+--     for _, item in ipairs(qflist) do
+--       if item.type == "E" then
+--         vim.cmd("cc")
+--         return
+--       end
+--     end
+--   end,
+-- })
+--
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = "tex",
+--   callback = function()
+--     vim.defer_fn(function()
+--       vim.opt_local.showbreak = ""
+--     end, 100)
+--
+--     vim.keymap.set("n", "<leader>k", function()
+--       vim.diagnostic.open_float()
+--     end, { buffer = true, desc = "Float diagnostic at cursor" })
+--
+--     -- Phase 6: auto create outputs/logs and .latexmkrc
+--     local root = vim.fn.getcwd()
+--
+--     local logs_path = root .. "/outputs/logs"
+--     if vim.fn.isdirectory(logs_path) == 0 then
+--       vim.fn.mkdir(logs_path, "p")
+--       vim.api.nvim_echo({ { "Created: " .. logs_path, "Normal" } }, false, {})
+--     end
+--
+--     local latexmkrc = root .. "/.latexmkrc"
+--     if vim.fn.filereadable(latexmkrc) == 0 then
+--       local f = io.open(latexmkrc, "w")
+--       if f then
+--         f:write("$out_dir   = 'outputs';\n")
+--         f:write("$aux_dir   = 'outputs/logs';\n")
+--         f:write("$pdf_mode  = 1;\n")
+--         f:write("$pdflatex  = 'pdflatex -interaction=nonstopmode -synctex=1 %O %S';\n")
+--         f:close()
+--         vim.api.nvim_echo({ { "Created: " .. latexmkrc, "Normal" } }, false, {})
+--       end
+--     end
+--
+--     -- only touch .gitignore if it already exists
+--     local gitignore = root .. "/.gitignore"
+--     if vim.fn.filereadable(gitignore) == 1 then
+--       local f = io.open(gitignore, "a+")
+--       if f then
+--         local content = f:read("*a")
+--         if not content:find("outputs/") then
+--           f:write("\noutputs/\n")
+--           vim.api.nvim_echo({ { "Added outputs/ to .gitignore", "Normal" } }, false, {})
+--         end
+--         f:close()
+--       end
+--     end
+--   end,
+-- })
+--
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = "qf",
+--   callback = function()
+--     vim.keymap.set("n", "q", "<cmd>cclose<cr>", { buffer = true, silent = true })
+--     vim.keymap.set("n", "<Esc>", "<cmd>cclose<cr>", { buffer = true, silent = true })
+--   end,
+-- })
+--
+-- vim.diagnostic.config({
+--   underline = true,
+--   virtual_text = false,
+--   signs = true,
+--   severity_sort = true,
+--   float = {
+--     border = "rounded",
+--     source = "if_many",
+--   },
+-- })
+--
+-- local signs = {
+--   Error = { text = "󰅚 ", hl = "DiagnosticSignError" },
+--   Warn = { text = "󰀪 ", hl = "DiagnosticSignWarn" },
+--   Info = { text = "󰋽 ", hl = "DiagnosticSignInfo" },
+--   Hint = { text = "󰌶 ", hl = "DiagnosticSignHint" },
+-- }
+-- for type, v in pairs(signs) do
+--   vim.fn.sign_define("DiagnosticSign" .. type, {
+--     text = v.text,
+--     texthl = v.hl,
+--     numhl = "",
+--   })
+-- end
+--
+-- vim.keymap.set("n", "<leader>lh", function()
+--   local diag = vim.diagnostic.get(0, { lnum = vim.fn.line(".") - 1 })
+--   if #diag == 0 then
+--     vim.api.nvim_echo({ { "No diagnostic at cursor", "Normal" } }, false, {})
+--     return
+--   end
+--   local msg = diag[1].message
+--   local hint = "No hint — check the full log with \\ll"
+--   if msg:find("overfull") or msg:find("Overfull") then
+--     hint = "Fix: add \\linebreak, use \\sloppy, or shorten the line"
+--   elseif msg:find("undefined") then
+--     hint = "Fix: check \\usepackage{}, \\newcommand{}, or spelling"
+--   elseif msg:find("Missing") then
+--     hint = "Fix: likely a missing closing brace } or $ sign"
+--   elseif msg:find("multiply defined") then
+--     hint = "Fix: duplicate \\label{} — rename one of them"
+--   elseif msg:find("Citation") or msg:find("citation") then
+--     hint = "Fix: check .bib file and run BibTeX / biber"
+--   elseif msg:find("runaway") or msg:find("Runaway") then
+--     hint = "Fix: unclosed environment — search backwards for missing \\end{}"
+--   end
+--   vim.api.nvim_echo({ { "Hint: " .. hint, "DiagnosticInfo" } }, false, {})
+-- end, { desc = "Suggest fix for LaTeX error at cursor" })
+--
+-- return {
+--   {
+--     "lervag/vimtex",
+--     lazy = false,
+--     init = function()
+--       vim.g.vimtex_view_method = "skim"
+--       vim.g.vimtex_compiler_latexmk = {
+--         out_dir = "outputs",
+--         callback = 1,
+--         continuous = 1,
+--         executable = "latexmk",
+--         options = {
+--           "-pdf",
+--           "-interaction=nonstopmode",
+--           "-synctex=1",
+--         },
+--       }
+--     end,
+--   },
+-- }
+--
