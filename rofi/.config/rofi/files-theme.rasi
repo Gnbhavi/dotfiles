@@ -1,0 +1,21 @@
+/* ── files-theme.rasi ── */
+@import "hub-theme.rasi"
+
+mainbox {
+    children: [ inputbar, message, listview ];
+}
+
+message {
+    background-color:   @bg1;
+    border:             1px;
+    border-color:       @border0;
+    border-radius:      12px;
+    padding:            8px 14px;
+}
+
+textbox {
+    background-color:   transparent;
+    text-color:         @fg1; 
+    font:               "JetBrainsMono Nerd Font 10";
+    vertical-align:     0.5;
+}

@@ -1,0 +1,39 @@
+/* ── drun-theme.rasi ── */
+@import "hub-theme.rasi"
+
+configuration {
+    disable-history:    false;
+    sort:               true;
+}
+
+window {
+    /* Make the window slightly wider to fit the grid nicely */
+    width:              640px; 
+}
+
+listview {
+    /* Switch from a single list to a grid */
+    columns:            6;
+    lines:              5;
+    spacing:            15px;
+    padding:            15px;
+}
+
+element {
+    /* Flip from side-by-side to stacked (icon above text) */
+    orientation:        vertical;
+    padding:            10px;
+    spacing:            5px;
+}
+
+element-icon {
+    /* Make icons larger for the grid view */
+    size:               30px;
+    horizontal-align:   0.5; /* Center the icon */
+}
+
+element-text {
+    horizontal-align:   0.5; /* Center the text below the icon */
+    vertical-align:     0.5;
+	font:				"JetBrainsMono Nerd Font 9";
+}

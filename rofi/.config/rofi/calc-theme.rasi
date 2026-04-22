@@ -1,0 +1,39 @@
+/* ── calc-theme.rasi ── */
+@import "hub-theme.rasi"
+
+/* Override the mainbox to show the live calc and footer */
+mainbox {
+    children: [ inputbar, message, listview, textbox-help ];
+}
+
+/* ── Live Calc Message Box ── */
+message {
+    background-color:   @bg1;
+    border:             1px;
+    border-color:       @border0;
+    border-radius:      12px;
+    padding:            10px 16px;
+}
+
+textbox {
+    background-color:   transparent;
+    text-color:         @accent0; 
+    font:               "JetBrainsMono Nerd Font 14";
+    vertical-align:     0.5;
+    horizontal-align:   0.0;
+}
+
+/* ── Shortcut Footer ── */
+textbox-help {
+    expand:             false;
+    markup:             true;
+    content:            "<span color='#00c3ff'>󰌑 Shift+Del:</span> Delete  •  <span color='#00c3ff'>Ctrl+Enter:</span> Copy/Close\n<span color='#ff4d4d'>Clear:</span> rm ~/.local/share/rofi/rofi_calc_history";
+    background-color:   @bg1;
+    border:             1px;
+    border-color:       @border0;
+    border-radius:      12px;
+    text-color:         @fg0;
+    font:               "JetBrainsMono Nerd Font 10";
+    horizontal-align:   0.5;
+    padding:            8px 10px;
+}

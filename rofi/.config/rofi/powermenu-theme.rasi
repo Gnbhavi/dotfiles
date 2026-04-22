@@ -1,0 +1,62 @@
+/* Global Reset to kill the default white theme */
+* {
+    background-color: transparent;
+    text-color: #cdd6f4;
+    font: "JetBrainsMono Nerd Font 12"; /* Put your preferred Nerd Font here! */
+}
+
+window {
+    width: 850px;
+    background-color: #1e1e2e;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+mainbox {
+    children: [ inputbar, listview ];
+    spacing: 20px;
+}
+
+/* The top bar */
+inputbar {
+    children: [ prompt ];
+    background-color: #28283d;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+prompt {
+    horizontal-align: 0.5;
+    width: 100%;
+    font: "JetBrainsMono Nerd Font Bold 12";
+}
+
+/* The Grid! 5 columns, 1 line */
+listview {
+    columns: 5;
+    lines: 1;
+    spacing: 15px;
+    cycle: true;
+    dynamic: true;
+    layout: vertical; 
+}
+
+/* The individual buttons */
+element {
+    padding: 15px 10px;
+    border-radius: 15px;
+    background-color: #28283d;
+}
+
+/* The active button */
+element selected {
+    background-color: #64a5cd;
+    text-color: #1e1e2e;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    cursor: pointer;
+    text-color: inherit;
+}

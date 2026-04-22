@@ -1,0 +1,122 @@
+/* ─────────────────────────────────────────────
+   hub-theme.rasi — Dark Glass Mac-ish
+   Inspired by adi1090x type5 + macOS spotlight
+   ───────────────────────────────────────────── */
+
+* {
+    bg0:        rgba(12, 16, 26, 0.95);
+    bg1:        rgba(255, 255, 255, 0.06);
+    bg2:        rgba(255, 255, 255, 0.09);
+
+    accent0:    rgba(0, 195, 255, 0.52);
+    accent1:    rgba(30, 100, 230, 0.34);
+    accent-b:   rgba(0, 185, 255, 0.42);
+
+    border0:    rgba(0, 185, 255, 0.16);
+    border1:    rgba(0, 185, 255, 0.32);
+
+    fg0:        rgba(225, 245, 255, 0.94);
+    fg1:        rgba(160, 210, 240, 0.68);
+    fg2:        rgba(100, 165, 205, 0.48);
+
+    background-color:   transparent;
+    text-color:         @fg0;
+    border-color:       @border0;
+    font:               "JetBrainsMono Nerd Font 12";
+}
+
+window {
+    background-color:   @bg0;
+    border:             1px;
+    border-color:       @border0;
+    border-radius:      20px;
+    padding:            14px;
+}
+
+mainbox {
+    background-color:   transparent;
+    spacing:            10px;
+    children:           [ inputbar, listview];
+}
+
+/* ── Search bar — wide pill like Spotlight ── */
+inputbar {
+    background-color:   @bg2;
+    border:             1px;
+    border-color:       @border1;
+    border-radius:      12px;
+    padding:            13px 16px;
+    spacing:            12px;
+    children:           [ prompt, entry ];
+}
+
+prompt {
+    background-color:   transparent;
+    text-color:         rgba(0, 195, 255, 0.88);
+    font:               "JetBrainsMono Nerd Font 14";
+}
+
+entry {
+    background-color:   transparent;
+    text-color:         @fg0;
+    placeholder-color:  @fg2;
+    placeholder:        "Search...";
+    cursor:             text;
+}
+
+/* ── List ── */
+listview {
+    background-color:   transparent;
+    spacing:            3px;
+    scrollbar:          false;
+    fixed-height:       false;
+    padding:            2px 0px;
+}
+
+/* ── Row — tall like type5 ── */
+element {
+    background-color:   transparent;
+    border:             1px;
+    border-color:       transparent;
+    border-radius:      12px;
+    padding:            10px 14px;
+    spacing:            14px;
+    orientation:        horizontal;
+}
+
+element normal.normal {
+    background-color:   transparent;
+    text-color:         @fg1;
+}
+
+element selected.normal {
+    background-color:   rgba(0, 200, 140, 0.35);
+    border-color:       @accent-b;
+    text-color:         @fg0;
+}
+
+element alternate.normal {
+    background-color:   transparent;
+    text-color:         @fg1;
+}
+
+element-icon {
+    background-color:   transparent;
+    size:               38px;
+    border-radius:      8px;
+}
+
+element-text {
+    background-color:   transparent;
+    text-color:         inherit;
+    highlight:          bold rgba(0, 195, 255, 0.92);
+    vertical-align:     0.5;
+    font:               "JetBrainsMono Nerd Font 12";
+}
+
+scrollbar {
+    background-color:   transparent;
+    handle-color:       rgba(0, 185, 255, 0.28);
+    handle-width:       4px;
+    border:             0px;
+}
