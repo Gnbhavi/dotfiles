@@ -1,8 +1,4 @@
--- bootstrap lazy.nvim, LazyVim and your plugins
+-- The init lua is the first file nvim Sees
+require("config.options")
+require("config.keymaps")
 require("config.lazy")
-
--- --- Line Wrap ---
-vim.opt.wrap = true
-vim.opt.linebreak = true -- wrap without breaking words
-vim.opt.showbreak = "↪ " -- nice indicator for wrapped lines
--- ------------------

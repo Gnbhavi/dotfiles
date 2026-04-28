@@ -94,3 +94,5 @@ end
 if functions -q tide
     my_colors
 end
+
+abbr -a nvim_test 'env NVIM_APPNAME=nvim-test nvim'
