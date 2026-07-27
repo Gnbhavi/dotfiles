@@ -96,3 +96,16 @@ if functions -q tide
 end
 
 abbr -a nvim_test 'env NVIM_APPNAME=nvim-test nvim'
+
+if not type -q yazi
+    echo "Install Yazi"
+end
+
+function y
+	set tmp (mktemp -t "yazi-cwd.XXXXXX")
+	command yazi $argv --cwd-file="$tmp"
+	if read -z cwd < "$tmp"; and [ "$cwd" != "$PWD" ]; and test -d "$cwd"
+		builtin cd -- "$cwd"
+	end
+	command rm -f -- "$tmp"
+end

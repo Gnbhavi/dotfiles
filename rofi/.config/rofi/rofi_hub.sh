@@ -5,7 +5,6 @@
 # ─────────────────────────────────────────────
 
 SCRIPTS_DIR="$(dirname "$(realpath "$0")")"
-SCRIPTS_DIR="$(dirname "$(realpath "$0")")"
 THEME="$SCRIPTS_DIR/hub-theme.rasi"
 # THEME="$HOME/.config/rofi/hub-theme.rasi"
 
