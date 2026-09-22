@@ -109,3 +109,4 @@ function y
 	end
 	command rm -f -- "$tmp"
 end
+set -gx PYTHON_VENV_ROOT /home/gn_bhavi/repos/Tools/Virtualenvs
