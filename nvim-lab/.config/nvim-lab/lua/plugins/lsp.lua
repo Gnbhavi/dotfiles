@@ -12,6 +12,21 @@ return {
     vim.lsp.enable("pyright")
     vim.lsp.enable("clangd")
     vim.lsp.enable("lua_ls")
+
+    vim.lsp.config("texlab", {
+      settings = {
+        texlab = {
+          build = {
+            onSave = false, -- VimTeX already handles compiling; don't let texlab also try
+          },
+          chktex = {
+            onOpenAndSave = true, -- catches LaTeX style issues VimTeX/latexmk won't (bad spacing, deprecated commands)
+          },
+        },
+      },
+    })
+    vim.lsp.enable("texlab")
+
     vim.diagnostic.config({
       underline = true,
       virtual_text = true,
