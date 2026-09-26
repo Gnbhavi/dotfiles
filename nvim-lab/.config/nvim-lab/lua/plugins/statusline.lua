@@ -1,3 +1,22 @@
+-- return {
+--   "nvim-lualine/lualine.nvim",
+--   dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin/nvim" },
+--   opts = {
+--     options = {
+--       theme = require("catppuccin.utils.lualine")(),
+--       globalstatus = true,
+--     },
+--     sections = {
+--       lualine_a = { "mode" },
+--       lualine_b = { "branch", "diff" },
+--       lualine_c = { "filename" },
+--       lualine_x = { "venv-selector", "diagnostics" },
+--       lualine_y = { "filetype" },
+--       lualine_z = { "location" },
+--     },
+--   },
+-- }
+--
 -- Wordcount for .tex and .md
 local function get_wordcount()
 	local ft = vim.bo.filetype
@@ -28,18 +47,18 @@ end
 
 return {
 	"nvim-lualine/lualine.nvim",
-	dependencies = { "nvim-tree/nvim-web-devicons" },
+	dependencies = { "nvim-tree/nvim-web-devicons" , "catppuccin/nvim" },
 	opts = {
 		options = {
-			theme = "auto",
-			component_separators = "|",
+		    theme = require("catppuccin.utils.lualine")(),
+			component_separators = "",
 			section_separators = "",
 			globalstatus = true,
 		},
 		-- Here is your custom layout!
 		sections = {
 			lualine_a = { "mode" }, -- Normal / Insert
-			lualine_b = { "branch", "diagnostics" }, -- master | +42 -1
+			lualine_b = { "venv-selector","branch", "diagnostics" }, -- master | +42 -1
 			lualine_c = { { "filename", path = 1 }, get_wordcount }, -- (Only shows up for .tex/.md)
 
 			lualine_x = { "diff" }, -- Timer | python
