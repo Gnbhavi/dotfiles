@@ -34,3 +34,8 @@ vim.keymap.set('n', '<leader>ud', function()
     vim.notify("Diagnostics on", vim.log.levels.INFO)
   end
 end, { desc = "Toggle diagnostics" })
+
+vim.keymap.set('n', '<leader>uc', function()
+  vim.g.blink_cmp_disabled = not vim.g.blink_cmp_disabled
+  vim.notify(vim.g.blink_cmp_disabled and "Completion off" or "Completion on", vim.log.levels.INFO)
+end, { desc = "Toggle completion popup" })

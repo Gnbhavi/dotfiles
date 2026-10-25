@@ -1,0 +1,2 @@
+immich_url = "http://localhost:2283/api"
+db_path = "photosync.db"

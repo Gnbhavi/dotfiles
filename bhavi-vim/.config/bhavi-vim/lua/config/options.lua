@@ -7,3 +7,4 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.termguicolors = true
 vim.opt.clipboard = "unnamedplus"
+vim.opt.fillchars = { eob = " " }
